@@ -1,5 +1,6 @@
 ﻿using AgriCureSystem.Models;
 using AgriCureSystem.Repositories.IRepositories;
+using AgriCureSystem.Utility;
 using AgriCureSystem.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,8 @@ using System.Threading.Tasks;
 namespace AgriCureSystem.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.SuperAdmin},{SD.Admin}")]
+
     public class ProductController : Controller
     {
         private readonly IProductRepository _productRepository;
@@ -80,6 +83,7 @@ namespace AgriCureSystem.Areas.Admin.Controllers
                     }).ToList(),
                     Product = new()
                 };
+                TempData["error-notification"] = "Add failed. Please correct the highlighted errors.";
 
                 return View(categoryWithBrandVM);
             }
@@ -100,7 +104,8 @@ namespace AgriCureSystem.Areas.Admin.Controllers
 
                 // Save product in DB
                 await _productRepository.CreateAsync(product);
-
+                TempData["success-notification"] = "Add Product Successfully";
+                
 
                 await _productRepository.CommitAsync();
 
@@ -150,6 +155,7 @@ namespace AgriCureSystem.Areas.Admin.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+
                     var categories = await _categoryRepository.GetAsync();
                     var brands = await _brandRepository.GetAsync();
                     product.MainImg = productInDB.MainImg;
@@ -168,6 +174,8 @@ namespace AgriCureSystem.Areas.Admin.Controllers
                         }).ToList(),
                         Product = product
                     };
+                    TempData["error-notification"] = "Update failed. Please correct the highlighted errors.";
+
 
                     return View(categoryWithBrandVM);
                 }
@@ -200,6 +208,10 @@ namespace AgriCureSystem.Areas.Admin.Controllers
 
                 // Update img in DB
                 _productRepository.Edit(product);
+
+                TempData["success-notification"] = "Update Product Successfully";
+
+
                 await _productRepository.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
@@ -222,6 +234,7 @@ namespace AgriCureSystem.Areas.Admin.Controllers
                 }
 
                 _productRepository.Delete(product);
+                TempData["success-notification"] = "Delete Product Successfully";
 
                 await _productRepository.CommitAsync();
 

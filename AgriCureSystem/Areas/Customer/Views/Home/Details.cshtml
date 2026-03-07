@@ -23,7 +23,9 @@
                     <span class="text-decoration-line-through">@Model.Product.Price.ToString("c")</span>
                     <span>@((Model.Product.Price - (Model.Product.Price * ((decimal)Model.Product.Discount / 100))).ToString("c"))</span>
                 </div>
-                <p class="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium at dolorem quidem modi. Nam sequi consequatur obcaecati excepturi alias magni, accusamus eius blanditiis delectus ipsam minima ea iste laborum vero?</p>
+                <p class="lead">
+                    @Model.Product.Description
+                </p>
                 <div class="d-flex">
                     <form asp-action="AddToCart" asp-controller="Cart">
                         <input type="hidden" name="productId" value="@Model.Product.ProductId" />

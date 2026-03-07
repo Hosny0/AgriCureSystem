@@ -1,5 +1,7 @@
 ﻿using AgriCureSystem.Models;
 using AgriCureSystem.Repositories.IRepositories;
+using AgriCureSystem.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgriCureSystem.Areas.Admin.Controllers
@@ -15,6 +17,8 @@ namespace AgriCureSystem.Areas.Admin.Controllers
             _categoryRepository = categoryRepository;
         }
 
+        [Authorize(Roles = $"{SD.SuperAdmin},{SD.Admin}")]
+
         public async Task<IActionResult> Index()
         {
             var categories = await _categoryRepository.GetAsync();
@@ -22,6 +26,7 @@ namespace AgriCureSystem.Areas.Admin.Controllers
             return View(categories);
         }
 
+        [Authorize(Roles = $"{SD.SuperAdmin},{SD.Admin}")]
 
         [HttpGet]
         public IActionResult Create()
@@ -29,11 +34,13 @@ namespace AgriCureSystem.Areas.Admin.Controllers
             return View(new Category());
         }
 
+        [Authorize(Roles = $"{SD.SuperAdmin},{SD.Admin}")]
         [HttpPost]
         public async Task<IActionResult> Create(Category category)
         {
             if(!ModelState.IsValid)
             {
+                TempData["error-notification"] = "Add failed. Please correct the highlighted errors.";
                 return View(category);
             }
 
@@ -48,6 +55,7 @@ namespace AgriCureSystem.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = $"{SD.SuperAdmin},{SD.Admin}")]
 
         public async Task<IActionResult> Edit([FromRoute] int id)
         {
@@ -62,11 +70,14 @@ namespace AgriCureSystem.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{SD.SuperAdmin},{SD.Admin}")]
 
         public async Task<IActionResult> Edit(Category category)
         {
             if(!ModelState.IsValid)
             {
+                TempData["error-notification"] = "Update failed. Please correct the highlighted errors.";
+
                 return View(category);
             }
 
@@ -76,6 +87,7 @@ namespace AgriCureSystem.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = $"{SD.SuperAdmin},{SD.Admin}")]
 
         public async Task<IActionResult> Delete([FromRoute] int id)
         {

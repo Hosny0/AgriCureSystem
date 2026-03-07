@@ -1,0 +1,53 @@
+﻿@using AgriCureSystem.Models
+@model Order
+
+<div class="container">
+    <div class="row mb-3 align-items-center my-3">
+        <div class="col-md-12">
+            <h2 class="display-6">Edit Order #@Model.Id</h2>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-12">
+            <form method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="mb-3">
+                    <label asp-for="OrderStatus" class="form-label">Order Status</label>
+                    <select asp-for="OrderStatus" class="form-select"
+                            asp-items="Html.GetEnumSelectList<OrderStatus>()">
+                    </select>
+                    <span class="text-danger" asp-validation-for="OrderStatus"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Carrier" class="form-label">Carrier (Shipping Company)</label>
+                    <input class="form-control" asp-for="Carrier" placeholder="e.g. Aramex, DHL">
+                    <span class="text-danger" asp-validation-for="Carrier"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CarrierId" class="form-label">Tracking Number (Carrier ID)</label>
+                    <input class="form-control" asp-for="CarrierId" placeholder="Enter tracking number">
+                    <span class="text-danger" asp-validation-for="CarrierId"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Total Price</label>
+                    <input class="form-control" value="@Model.TotalPrice.ToString("C")" readonly style="background-color: #e9ecef;">
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Update Order</button>
+                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* تفعيل التحقق من البيانات في جهة العميل *@
+    <partial name="_ValidationScriptsPartial" />
+}

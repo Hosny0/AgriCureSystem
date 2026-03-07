@@ -35,6 +35,8 @@ namespace AgriCureSystem.Areas.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["error-notification"] = " Register failed. Please correct the highlighted errors.";
+
                 return View(registerVM);
             }
 
@@ -101,37 +103,51 @@ namespace AgriCureSystem.Areas.Identity.Controllers
         public async Task<IActionResult> Login(LoginVM loginVM)
         {
             if (!ModelState.IsValid)
+                return View(loginVM);
+
+            var user = await _userManager.FindByNameAsync(loginVM.EmailORUserName) ?? await _userManager.FindByEmailAsync(loginVM.EmailORUserName);
+
+            if (user is null)
             {
+                ModelState.AddModelError(string.Empty, "Invalid User Name / Email OR Password");
                 return View(loginVM);
             }
 
-            var user = await _userManager.FindByEmailAsync(loginVM.EmailORUserName) ?? await _userManager.FindByNameAsync(loginVM.EmailORUserName);
+            var result = await _signInManager.PasswordSignInAsync(user, loginVM.Password, loginVM.RememberMe, lockoutOnFailure: true);
 
-            if(user is not null)
+            if (!result.Succeeded)
             {
-                var result = await _signInManager.PasswordSignInAsync(user.UserName, loginVM.Password, loginVM.RememberMe, lockoutOnFailure: true);
-
-                if (result.Succeeded)
-                {
-                    TempData["success-notification"] = "Login Successfully";
-                    return RedirectToAction(nameof(Index), "Home", new { area = "Customer" });
-                }
-
-                if (!user.EmailConfirmed)
-                {
-                    ModelState.AddModelError(string.Empty, "Confirm Your Account!");
-                    return View(loginVM);
-                }
-
                 if (result.IsLockedOut)
                 {
-                    ModelState.AddModelError(string.Empty, "Too Many Attempts");
-                    return View(loginVM);
+                    var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+
+                    if (lockoutEnd.HasValue && lockoutEnd.Value > DateTimeOffset.UtcNow)
+                    {
+                        var remainingDays = (lockoutEnd.Value - DateTimeOffset.UtcNow).Days;
+
+                        if (remainingDays > 0)
+                            ModelState.AddModelError(string.Empty, $"Your account is suspended by the admin. Try again after {remainingDays} days.");
+                        else
+                            ModelState.AddModelError(string.Empty, "Too many attempts, try again after a few minutes.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Your account is locked.");
+                    }
                 }
+                else if (result.IsNotAllowed && !user.EmailConfirmed)
+                {
+                    ModelState.AddModelError(string.Empty, "Please Confirm Your Email First!!");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid User Name / Email OR Password");
+                }
+
+                return View(loginVM);
             }
 
-            ModelState.AddModelError(string.Empty, "Invalid User Name Or Password");
-            return View(loginVM);
+            return RedirectToAction("Index", "Home", new { area = "Customer" });
         }
 
         public async Task<IActionResult> Logout()
@@ -151,6 +167,8 @@ namespace AgriCureSystem.Areas.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["error-notification"] = " ResendEmailConfirmation failed. Please correct the highlighted errors.";
+
                 return View(resendEmailConfirmationVM);
             }
 
@@ -266,6 +284,8 @@ namespace AgriCureSystem.Areas.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["error-notification"] = " ChangePassword failed. Please correct the highlighted errors.";
+
                 return View(changePasswordVM);
             }
 

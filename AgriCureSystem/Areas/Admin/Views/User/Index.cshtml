@@ -1,115 +1,135 @@
-﻿@using AgriCureSystem.Models
-@using AgriCureSystem.Utility
-
+﻿@using AgriCureSystem.Utility
 @model IEnumerable<ApplicationUser>
 
+@inject Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> UserManager
 
-
-@section Scripts {
-    <partial name="_NotificationPartial.cshtml">
-}
-
-    <div class="container">
-        <div class="row mb-3 align-items-center my-3">
-            <div class="col-md-6">
-                <h2 class="display-6">All Users</h2>
-            </div>
-
-
-            
-
+<div class="container">
+    <div class="row mb-3 align-items-center my-3">
+        <div class="col-md-6">
+            <h2 class="display-6">All Users</h2>
         </div>
-
-        <div class="row">
-            <div class="col-12">
-
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Actions</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <th scope="row">@item.Id</th>
-                                <td>@item.FirstName @item.LastName</td>
-                                <td>@item.Email</td>
-                                @if (item.LockoutEnabled)
-                                {
-                                                                <td>
-                                                                    <span class="badge text-bg-success">Active</span>
-                                                                </td>
-                                }
-                                else
-                                {
-                                                                <td>
-                                                                    <span class="badge text-bg-danger">InActive</span>
-                                                                </td>
-                                }
-
-                                @if (User.IsInRole(SD.SuperAdmin) || User.IsInRole(SD.Admin))
-                                {
-
-                                @if (item.LockoutEnabled)
-                                {
-                                    <td>
-                                        <a href="/Admin/User/LockUnlock/@item.Id"
-                                           class="btn btn-danger btn-delete"
-                                           data-id="@item.Id">Lock</a>
-                                    </td>
-                                }
-                                else
-                                {
-                                    <td>
-                                        <a href="/Admin/User/LockUnlock/@item.Id"
-                                           class="btn btn-danger btn-Success"
-                                           data-id="@item.Id">UnLock</a>
-                                    </td>
-                                }
-
-                             
-                                }
-                            </tr>
-                        }
-                        
-                    </tbody>
-                </table>
-            </div>
+        <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
+            <a href="/Admin/User/Create" class="btn btn-success">Create</a>
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const deleteButtons = document.querySelectorAll('.btn-delete');
+    <div class="row">
+        <div class="col-12">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" style="min-width: 150px;">Role</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        bool isLocked = item.LockoutEnd != null && item.LockoutEnd > DateTimeOffset.UtcNow;
 
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
+                        var userRoles = await UserManager.GetRolesAsync(item);
+                        var currentRole = userRoles.FirstOrDefault();
 
-                    const deleteUrl = this.getAttribute('href');
+                        var allRoles = new string[] { "Customer", "Employee", "Admin", "SuperAdmin" };
 
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "You won't be able to revert this!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, Lock it!'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = deleteUrl;
-                        }
-                    });
+                        <tr>
+                            <th scope="row">@item.Id</th>
+                            <td>@item.FirstName @item.LastName</td>
+                            <td>@item.Email</td>
+
+                            @if (isLocked)
+                            {
+                                <td><span class="badge text-bg-danger">Locked</span></td>
+                            }
+                            else
+                            {
+                                <td><span class="badge text-bg-success">Active</span></td>
+                            }
+
+                            <td>
+                                <form asp-action="UpdateRole" method="post" class="m-0">
+                                    <input type="hidden" name="userId" value="@item.Id" />
+
+                                    <select name="roleName" class="form-select form-select-sm" onchange="this.form.submit()" required>
+                                        <option value="" disabled selected="@(string.IsNullOrEmpty(currentRole))"></option>
+
+                                        @foreach (var role in allRoles)
+                                        {
+                                            if (role == currentRole)
+                                            {
+                                                <option value="@role" selected>@role</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@role">@role</option>
+                                            }
+                                        }
+                                    </select>
+                                </form>
+                            </td>
+
+                            @if (User.IsInRole(SD.SuperAdmin) || User.IsInRole("Admin"))
+                            {
+                                @if (isLocked)
+                                {
+                                    <td><a href="/Admin/User/LockUnLock/@item.Id" class="btn btn-success btn-sm">Un Lock</a></td>
+                                }
+                                else
+                                {
+                                    <td><a href="/Admin/User/LockUnLock/@item.Id" class="btn btn-danger btn-sm btn-lock">Lock</a></td>
+                                }
+                            }
+                            else
+                            {
+                                <td>No Actions!</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const lockButtons = document.querySelectorAll(".btn-lock");
+
+        lockButtons.forEach(button => {
+            button.addEventListener("click", function (e) {
+                e.preventDefault();
+                const url = this.getAttribute("href");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You are about to block this user!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, Block it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                          title: "Blocking...",
+                          text: "Please wait.",
+                          icon: "info",
+                          showConfirmButton: false,
+                          timer: 1000
+                        }).then(() => {
+                            window.location.href = url;
+                        });
+                    }
                 });
             });
         });
-    </script>
+    });
+</script>
 
+@section Scripts {
+    <partial name="_NotificationPartial" />
+}

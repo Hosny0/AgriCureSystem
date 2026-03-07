@@ -1,6 +1,6 @@
 ﻿using AgriCureSystem.Models;
 using AgriCureSystem.Repositories.IRepositories;
-
+using AgriCureSystem.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace AgriCureSystem.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.SuperAdmin},{SD.Admin}")]
 
     public class BrandController : Controller
     {
@@ -37,6 +38,7 @@ namespace AgriCureSystem.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                    TempData["error-notification"] = "Add failed. Please correct the highlighted errors.";
                 return View(brand);
             }
 
@@ -65,6 +67,8 @@ namespace AgriCureSystem.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                TempData["error-notification"] = "Update failed. Please correct the highlighted errors.";
+
                 return View(brand);
             }
 

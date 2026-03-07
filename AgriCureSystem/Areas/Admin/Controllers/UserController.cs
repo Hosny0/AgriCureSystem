@@ -3,11 +3,12 @@ using AgriCureSystem.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AgriCureSystem.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles ="SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin")]
     public class UserController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -17,12 +18,14 @@ namespace AgriCureSystem.Areas.Admin.Controllers
             _userManager = userManager;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-           // var users = _userManager.Users.AsNoTracking().AsQueryable();
+            var users = await _userManager.Users.ToListAsync();
+            return View(users);
 
-            return View(_userManager.Users);
         }
+
+
         public async Task<IActionResult> LockUnLock(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -34,20 +37,52 @@ namespace AgriCureSystem.Areas.Admin.Controllers
             {
                 TempData["error-notification"] = "You can not block super admin account";
                 return RedirectToAction("Index");
-         
             }
 
-            user.LockoutEnabled = !user.LockoutEnabled;
+            if (!user.LockoutEnabled)
+            {
+                user.LockoutEnabled = true;
+                await _userManager.UpdateAsync(user);
+            }
 
-            if (user.LockoutEnabled)
-                user.LockoutEnd = DateTime.UtcNow.AddDays(30);
+            bool isLocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow;
+
+            if (isLocked)
+            {
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
+            }
             else
-                user.LockoutEnd = null;
+            {
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddDays(30));
+            }
 
-            await _userManager.UpdateAsync(user);
+            TempData["success-notification"] = $"Update Status {user.FirstName} {user.LastName}";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UpdateRole(string userId, string roleName)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            if (await _userManager.IsInRoleAsync(user, SD.SuperAdmin) && roleName != SD.SuperAdmin)
+            {
+                TempData["error-notification"] = "Super Admin privileges cannot be changed";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+            if (!string.IsNullOrEmpty(roleName))
+            {
+                await _userManager.AddToRoleAsync(user, roleName);
+            }
+            TempData["success-notification"] = $"{user.FirstName} permissions updated successfully";
+            return RedirectToAction(nameof(Index));
+        }
     }
+
 }

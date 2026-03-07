@@ -36,11 +36,11 @@ namespace AgriCureSystem
                .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-          //  builder.Services.ConfigureApplicationCookie(options =>
-           // {
-            //    options.LoginPath = "/Identity/Account/Login";
-              //  options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-            //});
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Identity/Account/Login";
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+            });
 
           builder.Services.AddTransient<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();

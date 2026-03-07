@@ -19,6 +19,7 @@ namespace AgriCureSystem.Areas.Identity.Controllers
             _userManager = userManager;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -26,8 +27,20 @@ namespace AgriCureSystem.Areas.Identity.Controllers
             if (user is null)
                 return NotFound();
 
-            return View(user.Adapt<ApplicationUserVM>());
+            //var userVM = new ApplicationUserVM()
+            //{
+            //    FullName = user.FirstName + " " + user.LastName,
+            //    // FullName = $"{user.FirstName} {user.LastName}",
+            //    Address = user.Address,
+            //    Email = user.Email,
+            //    PhoneNumber = user.PhoneNumber
+            //};
+
+            var userVM = user.Adapt<ApplicationUserVM>();
+
+            return View(userVM);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> UpdateProfile(ApplicationUserVM applicationUserVM)

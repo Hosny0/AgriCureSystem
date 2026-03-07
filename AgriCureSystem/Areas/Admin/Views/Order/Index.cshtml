@@ -1,0 +1,117 @@
+﻿@model IEnumerable<Order>
+
+@{
+    ViewData["Title"] = "All Orders";
+}
+
+@section Scripts {
+    <partial name="_NotificationPartial.cshtml" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+}
+
+<div class="container">
+    <div class="row mb-3 align-items-center my-3">
+        <div class="col-md-6">
+            <h2 class="display-6">All Orders</h2>
+        </div>
+        <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Customer</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <th scope="row">@item.Id</th>
+                            <td>@(item.ApplicationUser?.FirstName ?? "Unknown")</td>
+							@*  <td>@(item.ApplicationUser)</td>*@ 
+
+                            <td>@item.DateTime.ToString("yyyy-MM-dd")</td>
+
+                            <td>@item.TotalPrice.ToString("C")</td>
+
+                            <td>
+                                @if (item.OrderStatus.ToString() == "completed" || item.OrderStatus.ToString() == "shipped")
+                                {
+                                    <span class="badge text-bg-success">@item.OrderStatus</span>
+                                }
+                                else if (item.OrderStatus.ToString() == "canceled")
+                                {
+                                    <span class="badge text-bg-danger">@item.OrderStatus</span>
+                                }
+                                else if (item.OrderStatus.ToString() == "pending" || item.OrderStatus.ToString() == "processing")
+                                {
+                                    <span class="badge text-bg-warning">@item.OrderStatus</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-secondary">@item.OrderStatus</span>
+                                }
+                            </td>
+
+                            <td>
+                                <a href="/Admin/Order/Details/@item.Id" class="btn btn-info btn-sm">
+                                    <i class="bi bi-eye"></i> Details
+                                </a>
+
+                                <a href="/Admin/Order/Edit/@item.Id" class="btn btn-warning btn-sm">Edit</a>
+
+                                <a href="/Admin/Order/Canceled/@item.Id"
+                                   class="btn btn-danger btn-sm btn-delete"
+                                   data-id="@item.Id">Cancel</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const deleteButtons = document.querySelectorAll('.btn-delete');
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const deleteUrl = this.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you want to cancel this order? Stock will be restored!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, Cancel it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // تعديل مهم: إنشاء Form وإرساله POST لأن الكنترولر [HttpPost]
+                        // ده نفس فكرة window.location بس أأمن وبيشتغل مع الكنترولر بتاعك
+                        var form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = deleteUrl;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>

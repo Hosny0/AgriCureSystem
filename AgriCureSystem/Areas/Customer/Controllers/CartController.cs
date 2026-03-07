@@ -196,7 +196,15 @@ namespace AgriCureSystem.Areas.Customer.Controllers
                     Quantity = item.Count,
                 });
             }
-
+            foreach (var item in carts)
+            {
+                // Check if the requested quantity exceeds the available stock
+                if (item.Count > item.Product.Quantity)
+                {
+                    TempData["error-notification"] = $"Sorry, {item.Product.Name} has only {item.Product.Quantity} items left in stock.";
+                    return RedirectToAction("Index", "Cart");
+                }
+            }
 
             var service = new SessionService();
             var session = service.Create(options);

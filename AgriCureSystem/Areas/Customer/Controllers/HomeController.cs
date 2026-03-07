@@ -85,16 +85,16 @@ namespace AgriCureSystem.Areas.Customer.Controllers
             {
                 var relatedProducts = _context.Products.Include(e => e.Category).Where(e => e.CategoryId == product.CategoryId && e.ProductId != product.ProductId).Skip(0).Take(4);
 
-                var topProduct = _context.Products.Include(e => e.Category).Where(e => e.ProductId != product.ProductId).OrderByDescending(e => e.Traffic).Skip(0).Take(4);
+          //      var topProduct = _context.Products.Include(e => e.Category).Where(e => e.ProductId != product.ProductId).OrderByDescending(e => e.Traffic).Skip(0).Take(4);
 
-                var similarProduct = _context.Products.Include(e => e.Category).Where(e => e.Name.Contains(product.Name) && e.ProductId != product.ProductId).Skip(0).Take(4);
+          //      var similarProduct = _context.Products.Include(e => e.Category).Where(e => e.Name.Contains(product.Name) && e.ProductId != product.ProductId).Skip(0).Take(4);
 
                 var ProductWithRelated = new ProductWithRelatedVM()
                 {
                     Product = product,
                     RelatedProducts = relatedProducts.ToList(),
-                    TopProduct = topProduct.ToList(),
-                    SimilarProduct = similarProduct.ToList()
+           //         TopProduct = topProduct.ToList(),
+             //       SimilarProduct = similarProduct.ToList()
                 };
 
                 product.Traffic++;
