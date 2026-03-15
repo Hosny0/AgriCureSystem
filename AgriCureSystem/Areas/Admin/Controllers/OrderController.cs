@@ -21,49 +21,28 @@ namespace AgriCureSystem.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var orders = await _orderRepository.GetAsync();
-            return View(orders); 
+            var orders = await _orderRepository.GetAsync(includes: [o => o.ApplicationUser]);
+            return View(orders);
         }
-
- 
+        
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var order = await _orderRepository.GetOneAsync(e => e.Id == id, includes: [equals => equals.ApplicationUser]);
+        
+            var order = await _orderRepository.GetOneAsync(
+                e => e.Id == id,
+                includes: [
+                    e => e.ApplicationUser,
+            e => e.OrderItems
+                ]);
 
             if (order is null)
                 return NotFound();
 
             return View(order);
         }
-        [HttpGet]
-        public async Task<IActionResult> Edit([FromRoute] int id)
-        {
-            var order = await _orderRepository.GetOneAsync(e => e.Id == id);
 
-            if (order is not null)
-            {
-                return View(order);
-            }
-
-            return RedirectToAction("NotFoundPage", "Home");
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Edit(Order order)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(order); 
-            }
-            _orderRepository.Edit(order);
-
-            TempData["success-notification"] = "Update Order Successfully";
-
-            await _orderRepository.CommitAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
+     
 
         [HttpPost]
         

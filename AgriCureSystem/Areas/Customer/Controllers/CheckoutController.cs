@@ -37,7 +37,7 @@ namespace AgriCureSystem.Areas.Customer.Controllers
                 return NotFound();
 
             // update order status
-            order.OrderStatus = OrderStatus.processing;
+            order.OrderStatus = OrderStatus.shipped;
             var service = new SessionService();
             var session = service.Get(order.SessionId);
             order.TransactionId = session.PaymentIntentId;

@@ -1,0 +1,93 @@
+﻿@using AgriCureSystem.Models
+@model Order
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="display-6 text-primary">Order Details #@Model.Id</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> Back to Orders
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-0 rounded-3 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title text-primary border-bottom pb-2 mb-3">
+                        <i class="bi bi-person-bounding-box me-2"></i> Customer Information
+                    </h5>
+                    <p class="mb-2">
+                        <strong class="text-muted">Name:</strong>
+                        <span class="fw-bold">@(Model.ApplicationUser?.FirstName ?? "Unknown") @(Model.ApplicationUser?.LastName ?? "")</span>
+                    </p>
+                    <p class="mb-2"><strong class="text-muted">Email:</strong> @(Model.ApplicationUser?.Email ?? "N/A")</p>
+                    <p class="mb-0"><strong class="text-muted">Phone:</strong> @(Model.ApplicationUser?.PhoneNumber ?? "N/A")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-0 rounded-3 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title text-success border-bottom pb-2 mb-3">
+                        <i class="bi bi-receipt me-2"></i> Order Summary
+                    </h5>
+                    <p class="mb-2"><strong class="text-muted">Date:</strong> @Model.DateTime.ToString("dd MMM yyyy, hh:mm tt")</p>
+                    <p class="mb-2">
+                        <strong class="text-muted">Status:</strong>
+                        <span class="badge bg-dark fs-6 px-3 py-1 rounded-pill">@Model.OrderStatus</span>
+                    </p>
+                    <p class="mb-2">
+                        <strong class="text-muted">Total Paid:</strong>
+                        <span class="text-success fw-bold fs-5">@Model.TotalPrice.ToString("C")</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3 text-secondary border-bottom pb-2">Purchased Items</h4>
+
+    <div class="list-group shadow-sm mb-5">
+        <div class="list-group-item bg-light border-bottom-0 d-flex justify-content-between align-items-center fw-bold text-muted py-3">
+            <div class="col-5">Product Name</div>
+            <div class="col-3 text-center">Price</div>
+            <div class="col-2 text-center">Qty</div>
+            <div class="col-2 text-end">Subtotal</div>
+        </div>
+
+        @if (Model.OrderItems != null && Model.OrderItems.Any())
+        {
+            foreach (var item in Model.OrderItems)
+            {
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                    <div class="col-5">
+                        <span class="fw-semibold text-dark">@(item.Product?.Name ?? "Unknown Product")</span>
+                    </div>
+                    <div class="col-3 text-center text-muted">@item.Price.ToString("C")</div>
+                    <div class="col-2 text-center">
+                        <span class="badge bg-secondary rounded-pill fs-6 px-3">@item.َQuantity</span>
+                    </div>
+                    <div class="col-2 text-end fw-bold text-success">@((item.Price * item.Quantity).ToString("C"))</div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="list-group-item text-center text-muted py-5">
+                <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                No items found for this order.
+            </div>
+        }
+    </div>
+
+    <div class="text-end mb-4">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning px-5 py-2 shadow-sm rounded-pill fw-bold">
+            <i class="bi bi-pencil-square me-2"></i> Edit Order
+        </a>
+    </div>
+</div>
