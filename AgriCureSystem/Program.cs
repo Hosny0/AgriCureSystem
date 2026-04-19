@@ -44,6 +44,7 @@ namespace AgriCureSystem
 
           builder.Services.AddTransient<IEmailSender, EmailSender>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IDiseaseScanRepository, DiseaseScanRepository>();
 
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<IBrandRepository, BrandRepository>();

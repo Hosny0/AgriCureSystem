@@ -13,3 +13,5 @@ namespace AgriCureSystem.Models
         public double Quantity { get; set; }
     }
 }
+
+
